@@ -1,0 +1,96 @@
+[
+  {
+    "id": "game1",
+    "title": "Counter-Strike 2",
+    "imagePath": "Images/cs2.jpg",
+    "executablePath": "",
+    "steamId": "730",
+    "platform": "steam"
+  },
+  {
+    "id": "game2",
+    "title": "Fortnite",
+    "imagePath": "Images/fortnite.jpg",
+    "executablePath": "C:\\Path\\To\\Game2.exe",
+    "platform": "epic"
+  },
+  {
+    "id": "game3",
+    "title": "Dota 2",
+    "imagePath": "Images/dota2.jpg",
+    "executablePath": "",
+    "steamId": "570",
+    "platform": "steam"
+  },
+  {
+    "id": "game4",
+    "title": "League of Legends",
+    "imagePath": "Images/leagueoflegends.jpg",
+    "executablePath": "",
+    "platform": "riot"
+  },
+  {
+    "id": "game5",
+    "title": "Minecraft",
+    "imagePath": "Images/minecraft.jpg",
+    "executablePath": "",
+    "platform": "mojang"
+  },
+  {
+    "id": "game6",
+    "title": "Valorant",
+    "imagePath": "Images/valorant.jpg",
+    "executablePath": "",
+    "platform": "riot"
+  },
+  {
+    "id": "game7",
+    "title": "Overwatch 2",
+    "imagePath": "Images/overwatch2.jpg",
+    "executablePath": "",
+    "platform": "blizzard"
+  },
+  {
+    "id": "game8",
+    "title": "Apex Legends",
+    "imagePath": "Images/apexlegends.jpg",
+    "executablePath": "",
+    "platform": "riot"
+  },
+  {
+    "id": "game9",
+    "title": "Call of Duty: Warzone",
+    "imagePath": "Images/callofdutywarzone.jpg",
+    "executablePath": "",
+    "platform": "riot"
+  },
+  {
+    "id": "game10",
+    "title": "Rocket League",
+    "imagePath": "Images/rocketleague.jpg",
+    "executablePath": "",
+    "platform": "epic"
+  },
+  {
+    "id": "game11",
+    "title": "Roblox",
+    "imagePath": "Images/roblox.jpg",
+    "executablePath": "",
+    "platform": "roblox"
+  },
+  {
+    "id": "game12",
+    "title": "Left 4 Dead 2",
+    "imagePath": "Images/left4dead2.jpg",
+    "executablePath": "",
+    "platform": "steam"
+  },
+  {
+    "id": "game13",
+    "title": "Google Chrome",
+    "imagePath": "Images/googlechrome.jpg",
+    "executablePath": "",
+    "platform": "google"
+  }
+]
+

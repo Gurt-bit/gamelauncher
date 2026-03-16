@@ -1,0 +1,120 @@
+<Window x:Class="GameLauncher.AdminWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:GameLauncher"
+        Title="Admin"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        Background="#020617">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Admin panel"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="White" />
+
+        <StackPanel Grid.Row="1"
+                    Margin="0,16,0,0">
+            <TextBlock Text="Här kan admin hantera inställningar för launchern."
+                       Foreground="#9CA3AF"
+                       TextWrapping="Wrap"
+                       Width="540" />
+            <TextBlock Text="Redigera spel (titel, bild, sökväg, plattform, SteamId) och spara till games.json."
+                       Margin="0,8,0,0"
+                       Foreground="#6B7280"
+                       FontSize="11"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <!-- Games editor -->
+        <DataGrid Grid.Row="2"
+                  Margin="0,16,0,0"
+                  Width="540"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="True"
+                  CanUserDeleteRows="True"
+                  ItemsSource="{Binding Games}"
+                  Background="#020617"
+                  Foreground="White"
+                  HeadersVisibility="Column"
+                  GridLinesVisibility="None"
+                  RowBackground="#111827"
+                  AlternatingRowBackground="#020617"
+                  BorderBrush="#1F2937"
+                  BorderThickness="1">
+            <DataGrid.Resources>
+                <!-- Header style -->
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#020617" />
+                    <Setter Property="Foreground" Value="#E5E7EB" />
+                    <Setter Property="BorderBrush" Value="#1F2937" />
+                    <Setter Property="BorderThickness" Value="0,0,0,1" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                </Style>
+                <!-- Cell style -->
+                <Style TargetType="DataGridCell">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="#F9FAFB" />
+                    <Setter Property="BorderBrush" Value="#1F2937" />
+                    <Setter Property="BorderThickness" Value="0,0,0,1" />
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#1D4ED8" />
+                            <Setter Property="Foreground" Value="#F9FAFB" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id"
+                                    Binding="{Binding Id}"
+                                    Width="80" />
+                <DataGridTextColumn Header="Title"
+                                    Binding="{Binding Title}"
+                                    Width="130" />
+                <DataGridTextColumn Header="Image path"
+                                    Binding="{Binding ImagePath}"
+                                    Width="120" />
+                <DataGridTextColumn Header="Executable"
+                                    Binding="{Binding ExecutablePath}"
+                                    Width="140" />
+                <DataGridTextColumn Header="Platform"
+                                    Binding="{Binding Platform}"
+                                    Width="80" />
+                <DataGridTextColumn Header="SteamId"
+                                    Binding="{Binding SteamId}"
+                                    Width="70" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="3"
+                    Margin="0,20,0,0"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="Save games"
+                    Click="SaveGames_Click"
+                    Padding="16,4"
+                    Margin="0,0,8,0"
+                    Background="#22C55E"
+                    Foreground="Black"
+                    BorderThickness="0"
+                    Cursor="Hand" />
+            <Button Content="Close launcher"
+                    Click="CloseLauncher_Click"
+                    Padding="16,4"
+                    Background="#DC2626"
+                    Foreground="White"
+                    BorderBrush="#B91C1C"
+                    BorderThickness="1"
+                    Cursor="Hand" />
+        </StackPanel>
+    </Grid>
+</Window>
+

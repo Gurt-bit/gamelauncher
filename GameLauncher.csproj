@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="games.json" CopyToOutputDirectory="Always" />
+    <None Include="accounts.json" CopyToOutputDirectory="Always" />
+    <None Include="discord.json" CopyToOutputDirectory="Always" />
+    <None Include="Images\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
