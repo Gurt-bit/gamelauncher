@@ -7,51 +7,76 @@
         WindowStyle="SingleBorderWindow"
         SizeToContent="WidthAndHeight"
         Background="#020617">
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <TextBlock x:Name="TitleText"
                    Text="Startalternativ"
                    FontSize="18"
                    FontWeight="SemiBold"
-                   Foreground="White" />
+                   Foreground="White"/>
 
         <StackPanel Grid.Row="1"
-                    Margin="0,16,0,0"
-                    Orientation="Vertical">
+                    Margin="0,16,0,0">
+
             <RadioButton x:Name="UseMyAccountRadio"
                          Content="Använd eget konto"
                          IsChecked="True"
                          Foreground="White"
-                         Margin="0,0,0,8" />
+                         Margin="0,0,0,8"
+                         Checked="AccountType_Checked"/>
+
+            <StackPanel x:Name="MyAccountPanel"
+                        Margin="24,0,0,12">
+
+                <TextBlock Text="Steam-användarnamn"
+                           Foreground="#9CA3AF"
+                           FontSize="12"/>
+
+                <TextBox x:Name="MyUsernameTextBox"
+                         Width="260"
+                         Margin="0,4,0,10"/>
+
+                <TextBlock Text="Steam-lösenord"
+                           Foreground="#9CA3AF"
+                           FontSize="12"/>
+
+                <PasswordBox x:Name="MyPasswordBox"
+                             Width="260"
+                             Margin="0,4,0,0"/>
+            </StackPanel>
+
             <RadioButton x:Name="BorrowAccountRadio"
                          Content="Låna konto"
-                         Foreground="White" />
+                         Foreground="White"
+                         Checked="AccountType_Checked"/>
 
             <TextBlock x:Name="BorrowAccountDetails"
                        Margin="24,8,0,0"
                        Foreground="#9CA3AF"
                        FontSize="12"
-                       TextWrapping="Wrap" />
+                       TextWrapping="Wrap"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Margin="0,20,0,0">
+
             <Button Content="Avbryt"
                     Width="80"
                     Margin="0,0,8,0"
-                    IsCancel="True" />
+                    IsCancel="True"/>
+
             <Button Content="Starta"
                     Width="80"
                     IsDefault="True"
-                    Click="Launch_Click" />
+                    Click="Launch_Click"/>
         </StackPanel>
     </Grid>
 </Window>
-

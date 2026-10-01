@@ -13,14 +13,14 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Enter admin password"
+        <TextBlock Text="Lösenord för admin"
                    FontSize="16"
                    FontWeight="SemiBold"
                    Foreground="White" />
 
         <StackPanel Grid.Row="1"
                     Margin="0,12,0,0">
-            <TextBlock Text="Password"
+            <TextBlock Text="Lösenord"
                        Foreground="#E5E7EB"
                        FontSize="12" />
             <PasswordBox x:Name="PasswordBox"
@@ -32,11 +32,11 @@
                     Margin="0,16,0,0"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
-            <Button Content="Cancel"
+            <Button Content="Avbryt"
                     Width="80"
                     Margin="0,0,8,0"
                     IsCancel="True" />
-            <Button Content="Login"
+            <Button Content="Logga in"
                     Width="80"
                     IsDefault="True"
                     Click="Login_Click" />

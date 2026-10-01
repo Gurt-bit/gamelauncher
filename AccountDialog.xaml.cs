@@ -15,56 +15,161 @@ public partial class AccountDialog : Window
 {
     private readonly IReadOnlyList<AccountDefinition> _accountsForGame;
 
-    public LaunchChoice Choice { get; private set; } = LaunchChoice.None;
-    public AccountDefinition? SelectedBorrowAccount { get; private set; }
+    public LaunchChoice Choice { get; private set; } =
+        LaunchChoice.None;
 
-    public AccountDialog(string gameTitle, IReadOnlyList<AccountDefinition> accountsForGame)
+    public AccountDefinition? SelectedBorrowAccount
+    {
+        get;
+        private set;
+    }
+
+    public string? MyUsername
+    {
+        get;
+        private set;
+    }
+
+    public string? MyPassword
+    {
+        get;
+        private set;
+    }
+
+    public AccountDialog(
+        string gameTitle,
+        IReadOnlyList<AccountDefinition>? accountsForGame)
     {
         InitializeComponent();
-        _accountsForGame = accountsForGame;
 
-        TitleText.Text = $"Starta \"{gameTitle}\"";
+        _accountsForGame =
+            accountsForGame ??
+            System.Array.Empty<AccountDefinition>();
+
+        TitleText.Text =
+            $"Starta \"{gameTitle}\"";
 
         if (_accountsForGame.Any())
         {
-            var first = _accountsForGame.First();
-            BorrowAccountDetails.Text = $"Låna konto:\n{first.Username}";
+            var first =
+                _accountsForGame.First();
+
+            BorrowAccountDetails.Text =
+                $"Låna konto:\n{first.Username}";
         }
         else
         {
-            BorrowAccountDetails.Text = "No borrowable accounts configured for this game.";
-            BorrowAccountRadio.IsEnabled = false;
+            BorrowAccountDetails.Text =
+                "Inga lånekonton är konfigurerade.";
 
-            // Dölj eller disable lokalt konto
-            UseMyAccountRadio.Visibility = Visibility.Collapsed;
+            BorrowAccountRadio.IsEnabled = false;
+        }
+
+        MyAccountPanel.Visibility =
+            Visibility.Visible;
+    }
+
+    private void AccountType_Checked(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if (MyAccountPanel == null)
+        {
+            return;
+        }
+
+        if (UseMyAccountRadio.IsChecked == true)
+        {
+            MyAccountPanel.Visibility =
+                Visibility.Visible;
+        }
+        else
+        {
+            MyAccountPanel.Visibility =
+                Visibility.Collapsed;
         }
     }
 
-    private void Launch_Click(object sender, RoutedEventArgs e)
+    private void Launch_Click(
+        object sender,
+        RoutedEventArgs e)
     {
+        // =============================================
+        // EGET KONTO
+        // =============================================
+
         if (UseMyAccountRadio.IsChecked == true)
         {
-            Choice = LaunchChoice.UseMyAccount;
+            var username =
+                MyUsernameTextBox.Text.Trim();
+
+            var password =
+                MyPasswordBox.Password;
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                MessageBox.Show(
+                    this,
+                    "Ange ditt Steam-användarnamn.",
+                    "Användarnamn saknas",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                MyUsernameTextBox.Focus();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                MessageBox.Show(
+                    this,
+                    "Ange ditt Steam-lösenord.",
+                    "Lösenord saknas",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                MyPasswordBox.Focus();
+                return;
+            }
+
+            MyUsername = username;
+            MyPassword = password;
+
+            Choice =
+                LaunchChoice.UseMyAccount;
+
             DialogResult = true;
+
             return;
         }
+
+        // =============================================
+        // LÅNA KONTO
+        // =============================================
 
         if (BorrowAccountRadio.IsChecked == true)
         {
             if (!_accountsForGame.Any())
             {
-                MessageBox.Show(this,
-                    "No borrowable accounts are configured for this game (see accounts.json).",
-                    "No accounts",
+                MessageBox.Show(
+                    this,
+                    "Inga lånekonton är konfigurerade för detta spel.",
+                    "Inga konton",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
+
                 return;
             }
 
-            Choice = LaunchChoice.BorrowAccount;
-            SelectedBorrowAccount = _accountsForGame.First();
+            SelectedBorrowAccount =
+                _accountsForGame.First();
+
+            Choice =
+                LaunchChoice.BorrowAccount;
+
             DialogResult = true;
+
+            return;
         }
     }
 }
-

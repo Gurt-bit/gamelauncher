@@ -91,6 +91,13 @@
     "imagePath": "Images/googlechrome.jpg",
     "executablePath": "",
     "platform": "google"
+  },
+  {
+    "id": "game14",
+    "title": "The Sims 4",
+    "imagePath": "Images/thesims4.jpg",
+    "executablePath": "",
+    "platform": "steam"
   }
 ]
 
