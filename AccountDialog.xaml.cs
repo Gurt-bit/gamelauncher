@@ -15,6 +15,7 @@ public enum LaunchChoice
 public partial class AccountDialog : Window
 {
     private readonly IReadOnlyList<AccountDefinition> _accountsForGame;
+    private readonly string _platform;
 
     public LaunchChoice Choice { get; private set; } =
         LaunchChoice.None;
@@ -37,8 +38,6 @@ public partial class AccountDialog : Window
         private set;
     }
 
-    private readonly string _platform;
-
     public AccountDialog(
         string gameTitle,
         string platform,
@@ -49,17 +48,63 @@ public partial class AccountDialog : Window
         _platform = platform;
         _accountsForGame = accountsForGame;
 
+        if (_platform.Equals(
+                "epic",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            MyAccountPanel.Visibility =
+                Visibility.Collapsed;
+
+            MyUsernameLabel.Visibility =
+                Visibility.Collapsed;
+
+            MyUsernameTextBox.Visibility =
+                Visibility.Collapsed;
+
+            MyPasswordLabel.Visibility =
+                Visibility.Collapsed;
+
+            MyPasswordBox.Visibility =
+                Visibility.Collapsed;
+        }
+
+
         TitleText.Text = $"Starta \"{gameTitle}\"";
 
-        var displayName =
+        var isEpic =
             platform.Equals(
                 "epic",
-                StringComparison.OrdinalIgnoreCase)
-                ? "Epic Games"
-                : "Steam";
+                StringComparison.OrdinalIgnoreCase);
 
-        MyUsernameLabel.Text = $"{displayName}-användarnamn";
-        MyPasswordLabel.Text = $"{displayName}-lösenord";
+        var displayName = isEpic
+            ? "Epic Games"
+            : "Steam";
+
+        MyUsernameLabel.Text =
+            $"{displayName}-användarnamn";
+
+        MyPasswordLabel.Text =
+            $"{displayName}-lösenord";
+
+        // Epic använder Legendarys egna autentiseringsflöde.
+        // Vi ska därför inte fråga efter Epic-lösenord här.
+        if (isEpic)
+        {
+            MyAccountPanel.Visibility =
+                Visibility.Collapsed;
+
+            MyUsernameLabel.Visibility =
+                Visibility.Collapsed;
+
+            MyUsernameTextBox.Visibility =
+                Visibility.Collapsed;
+
+            MyPasswordLabel.Visibility =
+                Visibility.Collapsed;
+
+            MyPasswordBox.Visibility =
+                Visibility.Collapsed;
+        }
 
         if (_accountsForGame.Any())
         {
@@ -77,35 +122,81 @@ public partial class AccountDialog : Window
         }
     }
 
-
     private void AccountType_Checked(
         object sender,
         RoutedEventArgs e)
     {
         if (MyAccountPanel == null)
-        {
             return;
-        }
 
-        if (UseMyAccountRadio.IsChecked == true)
-        {
-            MyAccountPanel.Visibility =
-                Visibility.Visible;
-        }
-        else
+        if (_platform.Equals(
+                "epic",
+                StringComparison.OrdinalIgnoreCase))
         {
             MyAccountPanel.Visibility =
                 Visibility.Collapsed;
+
+            return;
         }
+
+        MyAccountPanel.Visibility =
+            UseMyAccountRadio.IsChecked == true
+                ? Visibility.Visible
+                : Visibility.Collapsed;
     }
+
 
     private void Launch_Click(
         object sender,
         RoutedEventArgs e)
     {
-        // =============================================
-        // EGET KONTO
-        // =============================================
+        // =================================================
+        // EPIC
+        // =================================================
+
+        if (_platform.Equals(
+                "epic",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            if (UseMyAccountRadio.IsChecked == true)
+            {
+                Choice =
+                    LaunchChoice.UseMyAccount;
+
+                DialogResult = true;
+                return;
+            }
+
+            if (BorrowAccountRadio.IsChecked == true)
+            {
+                if (!_accountsForGame.Any())
+                {
+                    MessageBox.Show(
+                        this,
+                        "Inga lånekonton är konfigurerade för detta spel.",
+                        "Inga konton",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    return;
+                }
+
+                SelectedBorrowAccount =
+                    _accountsForGame.First();
+
+                Choice =
+                    LaunchChoice.BorrowAccount;
+
+                DialogResult = true;
+                return;
+            }
+
+            return;
+        }
+
+        // =================================================
+        // STEAM
+        // =================================================
 
         if (UseMyAccountRadio.IsChecked == true)
         {
@@ -148,13 +239,12 @@ public partial class AccountDialog : Window
                 LaunchChoice.UseMyAccount;
 
             DialogResult = true;
-
             return;
         }
 
-        // =============================================
-        // LÅNA KONTO
-        // =============================================
+        // =================================================
+        // LÅNA STEAM-KONTO
+        // =================================================
 
         if (BorrowAccountRadio.IsChecked == true)
         {
@@ -177,8 +267,7 @@ public partial class AccountDialog : Window
                 LaunchChoice.BorrowAccount;
 
             DialogResult = true;
-
-            return;
         }
     }
+
 }

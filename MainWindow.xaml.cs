@@ -220,7 +220,12 @@ public partial class MainWindow : Window
 
         try
         {
-            _epicLauncher ??= new EpicLauncherService();
+            _epicLauncher ??=
+                new EpicLauncherService();
+
+            // =============================================
+            // LÅNEKONTO
+            // =============================================
 
             if (borrowAccount is not null)
             {
@@ -234,8 +239,8 @@ public partial class MainWindow : Window
                         MessageBox.Show(
                             this,
                             $"Epic-kontot \"{borrowAccount.Username}\" " +
-                            "behöver loggas in.\n\n" +
-                            "Vill du öppna Epic-inloggningen nu?",
+                            "är inte inloggat.\n\n" +
+                            "Vill du logga in nu?",
                             "Epic-konto",
                             MessageBoxButton.YesNo,
                             MessageBoxImage.Question);
@@ -253,6 +258,20 @@ public partial class MainWindow : Window
                 }
             }
 
+            // =============================================
+            // EGET KONTO
+            // =============================================
+            //
+            // account == null
+            //
+            // EpicLauncherService skapar då alltid en
+            // helt ny temporär profil.
+            //
+            // Därför kan tidigare användares Epic-session
+            // aldrig återanvändas.
+            //
+            // =============================================
+
             await _epicLauncher.LaunchGame(
                 this,
                 _selectedGame.EpicAppName,
@@ -267,7 +286,18 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
         }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                this,
+                $"Epic-starten misslyckades.\n\n{ex.Message}",
+                "Epic-fel",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
+
+
 
 
 
