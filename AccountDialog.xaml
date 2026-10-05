@@ -34,7 +34,8 @@
             <StackPanel x:Name="MyAccountPanel"
                         Margin="24,0,0,12">
 
-                <TextBlock Text="Steam-användarnamn"
+                <TextBlock x:Name="MyUsernameLabel"
+                           Text="Användarnamn"
                            Foreground="#9CA3AF"
                            FontSize="12"/>
 
@@ -42,7 +43,8 @@
                          Width="260"
                          Margin="0,4,0,10"/>
 
-                <TextBlock Text="Steam-lösenord"
+                <TextBlock x:Name="MyPasswordLabel"
+                           Text="Lösenord"
                            Foreground="#9CA3AF"
                            FontSize="12"/>
 

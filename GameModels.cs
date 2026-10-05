@@ -40,6 +40,9 @@ public class GameDefinition
     [JsonPropertyName("steamId")]
     public string? SteamId { get; set; }
 
+    [JsonPropertyName("epicAppName")]
+    public string? EpicAppName { get; set; }
+
     [JsonIgnore]
     public string FullImagePath =>
         string.IsNullOrWhiteSpace(ImagePath)

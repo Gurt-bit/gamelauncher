@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -36,23 +37,33 @@ public partial class AccountDialog : Window
         private set;
     }
 
+    private readonly string _platform;
+
     public AccountDialog(
         string gameTitle,
-        IReadOnlyList<AccountDefinition>? accountsForGame)
+        string platform,
+        IReadOnlyList<AccountDefinition> accountsForGame)
     {
         InitializeComponent();
 
-        _accountsForGame =
-            accountsForGame ??
-            System.Array.Empty<AccountDefinition>();
+        _platform = platform;
+        _accountsForGame = accountsForGame;
 
-        TitleText.Text =
-            $"Starta \"{gameTitle}\"";
+        TitleText.Text = $"Starta \"{gameTitle}\"";
+
+        var displayName =
+            platform.Equals(
+                "epic",
+                StringComparison.OrdinalIgnoreCase)
+                ? "Epic Games"
+                : "Steam";
+
+        MyUsernameLabel.Text = $"{displayName}-användarnamn";
+        MyPasswordLabel.Text = $"{displayName}-lösenord";
 
         if (_accountsForGame.Any())
         {
-            var first =
-                _accountsForGame.First();
+            var first = _accountsForGame.First();
 
             BorrowAccountDetails.Text =
                 $"Låna konto:\n{first.Username}";
@@ -64,10 +75,8 @@ public partial class AccountDialog : Window
 
             BorrowAccountRadio.IsEnabled = false;
         }
-
-        MyAccountPanel.Visibility =
-            Visibility.Visible;
     }
+
 
     private void AccountType_Checked(
         object sender,

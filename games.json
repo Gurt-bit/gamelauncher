@@ -11,8 +11,9 @@
     "id": "game2",
     "title": "Fortnite",
     "imagePath": "Images/fortnite.jpg",
-    "executablePath": "C:\\Path\\To\\Game2.exe",
-    "platform": "epic"
+    "executablePath": "",
+    "platform": "epic",
+    "epicAppName": "Fortnite"
   },
   {
     "id": "game3",

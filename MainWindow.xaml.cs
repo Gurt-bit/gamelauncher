@@ -24,6 +24,8 @@ public partial class MainWindow : Window
 
     private readonly GameLauncherService _launcher = new();
 
+    private EpicLauncherService? _epicLauncher;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -93,33 +95,38 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void ShowLaunchDialogAndLaunch()
+    private void ShowLaunchDialogAndLaunch()
     {
-    try
-    {
-    if (_selectedGame is null)
-    {
-    return;
-    }
+        if (_selectedGame is null)
+            return;
 
         var platform =
             !string.IsNullOrWhiteSpace(_selectedGame.Platform)
                 ? _selectedGame.Platform
                 : !string.IsNullOrWhiteSpace(_selectedGame.SteamId)
                     ? "steam"
-                    : "epic";
+                    : null;
+
+        if (string.IsNullOrWhiteSpace(platform))
+        {
+            _launcher.LaunchExecutable(
+                this,
+                _selectedGame.ExecutablePath);
+
+            return;
+        }
 
         var accountsForPlatform = _accounts
             .Where(a =>
-                a != null &&
                 string.Equals(
                     a.Platform,
                     platform,
-                    System.StringComparison.OrdinalIgnoreCase))
+                    StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
         var dialog = new AccountDialog(
             _selectedGame.Title,
+            platform,
             accountsForPlatform)
         {
             Owner = this
@@ -133,106 +140,136 @@ public partial class MainWindow : Window
             return;
         }
 
-        // -------------------------------------------------
-        // VISA LOADING
-        // -------------------------------------------------
+        var borrowAccount =
+            dialog.Choice == LaunchChoice.BorrowAccount
+                ? dialog.SelectedBorrowAccount
+                : null;
 
-        LaunchLoadingOverlay.Visibility =
-            Visibility.Visible;
+        if (platform.Equals(
+                "steam",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            LaunchSteam(
+                borrowAccount);
+
+            return;
+        }
+
+        if (platform.Equals(
+                "epic",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            LaunchEpic(
+                borrowAccount);
+
+            return;
+        }
+
+        _launcher.LaunchExecutable(
+            this,
+            _selectedGame.ExecutablePath);
+    }
+
+    private async void LaunchSteam(
+        AccountDefinition? borrowAccount)
+    {
+        if (_selectedGame is null ||
+            string.IsNullOrWhiteSpace(_selectedGame.SteamId))
+        {
+            return;
+        }
+
+        if (borrowAccount is not null)
+        {
+            await _launcher.LaunchSteamGame(
+                this,
+                _selectedGame.SteamId,
+                borrowAccount);
+        }
+        else
+        {
+            // Eget Steam-konto
+            // AccountDialog innehåller användarnamn/lösenord.
+            //
+            // Lägg till detta när dialogens värden exponeras.
+            await _launcher.LaunchSteamGame(
+                this,
+                _selectedGame.SteamId);
+        }
+    }
+
+    private async void LaunchEpic(
+        AccountDefinition? borrowAccount)
+    {
+        if (_selectedGame is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(
+                _selectedGame.EpicAppName))
+        {
+            MessageBox.Show(
+                this,
+                "Epic App Name saknas för spelet.\n\n" +
+                "Lägg till \"epicAppName\" i games.json.",
+                "Epic-konfiguration saknas",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
 
         try
         {
-            // -------------------------------------------------
-            // STEAM
-            // -------------------------------------------------
+            _epicLauncher ??= new EpicLauncherService();
 
-            if (!string.IsNullOrWhiteSpace(_selectedGame.SteamId))
+            if (borrowAccount is not null)
             {
-                if (dialog.Choice ==
-                    LaunchChoice.BorrowAccount)
+                var authenticated =
+                    await _epicLauncher.IsAuthenticated(
+                        borrowAccount);
+
+                if (!authenticated)
                 {
-                    if (dialog.SelectedBorrowAccount is null)
-                    {
+                    var result =
                         MessageBox.Show(
                             this,
-                            "Inget lånekonto valdes.",
-                            "Lånekonto saknas",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
+                            $"Epic-kontot \"{borrowAccount.Username}\" " +
+                            "behöver loggas in.\n\n" +
+                            "Vill du öppna Epic-inloggningen nu?",
+                            "Epic-konto",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question);
 
+                    if (result != MessageBoxResult.Yes)
                         return;
-                    }
 
-                    await _launcher.LaunchSteamGame(
-                        this,
-                        _selectedGame.SteamId,
-                        dialog.SelectedBorrowAccount);
-
-                    return;
-                }
-
-                if (dialog.Choice ==
-                    LaunchChoice.UseMyAccount)
-                {
-                    if (string.IsNullOrWhiteSpace(
-                            dialog.MyUsername) ||
-                        string.IsNullOrWhiteSpace(
-                            dialog.MyPassword))
-                    {
-                        MessageBox.Show(
+                    authenticated =
+                        await _epicLauncher.AuthenticateAccount(
                             this,
-                            "Steam-användarnamn och lösenord måste anges.",
-                            "Steam-inloggning saknas",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
+                            borrowAccount);
 
+                    if (!authenticated)
                         return;
-                    }
-
-                    await _launcher.LaunchSteamGame(
-                        this,
-                        _selectedGame.SteamId,
-                        dialog.MyUsername,
-                        dialog.MyPassword);
-
-                    return;
                 }
-
-                return;
             }
 
-            // -------------------------------------------------
-            // EJ STEAM
-            // -------------------------------------------------
-
-            _launcher.LaunchExecutable(
+            await _epicLauncher.LaunchGame(
                 this,
-                _selectedGame.ExecutablePath);
+                _selectedGame.EpicAppName,
+                borrowAccount);
         }
-        finally
+        catch (FileNotFoundException ex)
         {
-            LaunchLoadingOverlay.Visibility =
-                Visibility.Collapsed;
+            MessageBox.Show(
+                this,
+                ex.Message,
+                "Legendary saknas",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
         }
     }
-    catch (Exception ex)
-    {
-        LaunchLoadingOverlay.Visibility =
-            Visibility.Collapsed;
-
-        MessageBox.Show(
-            this,
-            "Ett fel uppstod när spelet skulle startas.\n\n" +
-            ex.GetType().Name +
-            "\n\n" +
-            ex.Message,
-            "Game Launcher - fel",
-            MessageBoxButton.OK,
-            MessageBoxImage.Error);
-    }
 
 
-    }
 
     private void Admin_Click(
         object sender,

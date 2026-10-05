@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -9,6 +9,7 @@
     <None Include="games.json" CopyToOutputDirectory="Always" />
     <None Include="accounts.json" CopyToOutputDirectory="Always" />
     <None Include="discord.json" CopyToOutputDirectory="Always" />
+    <None Include="legendary.exe" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Images\**\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
