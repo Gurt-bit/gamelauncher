@@ -44,12 +44,7 @@ public class EpicLauncherService
 
         try
         {
-            /*
-             * Eget konto:
-             *
-             * Börja alltid med en ren profil så att en gammal
-             * Epic-session inte kan användas av misstag.
-             */
+            // Eget konto ska ALLTID börja från en ren session.
             if (account is null)
             {
                 DeleteDirectorySafe(profilePath);
@@ -57,6 +52,18 @@ public class EpicLauncherService
 
             PrepareProfile(profilePath);
 
+            /*
+             * Viktigt:
+             *
+             * Kör INTE --disable-webview.
+             *
+             * Om legendary.exe har WebView-stöd kommer Legendary
+             * då att öppna sitt eget Epic-loginfönster och själv
+             * hantera authorization-koden.
+             *
+             * Om executable saknar WebView faller Legendary tillbaka
+             * till browser-flödet.
+             */
             var result = await RunLegendaryAsync(
                 profilePath,
                 "auth",
@@ -66,7 +73,7 @@ public class EpicLauncherService
             {
                 ShowError(
                     owner,
-                    "Kunde inte starta Legendary.",
+                    "Legendary kunde inte startas.",
                     "Epic-login");
 
                 return false;
@@ -84,50 +91,27 @@ public class EpicLauncherService
                 return false;
             }
 
-            /*
-             * DETTA ÄR DEN VIKTIGASTE KONTROLLEN.
-             *
-             * Exit code 0 betyder inte tillräckligt.
-             * Vi måste kontrollera att Legendary faktiskt
-             * sparade credentials i just denna profil.
-             */
             if (!HasCredentials(profilePath))
             {
                 ShowError(
                     owner,
-                    "Epic-inloggningen avslutades men Legendary " +
-                    "sparade inga inloggningsuppgifter.\n\n" +
-                    "Förväntad profil:\n" +
-                    profilePath +
-                    "\n\n" +
-                    "Försök logga in igen.",
+                    "Epic-inloggningen slutfördes inte.\n\n" +
+                    "Ingen sparad Epic-session hittades.\n\n" +
+                    "Om Chrome öppnades och visade JSON betyder det " +
+                    "att din legendary.exe använder browser-fallbacken " +
+                    "i stället för inbyggt WebView.",
                     "Epic-login");
 
                 return false;
             }
 
-            /*
-             * Kontrollera dessutom att Legendary kan läsa
-             * den sparade sessionen.
-             */
-            if (!await IsAuthenticatedInternal(profilePath))
-            {
-                ShowError(
-                    owner,
-                    "Epic-kontot sparades inte korrekt eller " +
-                    "kunde inte verifieras av Legendary.",
-                    "Epic-login");
-
-                return false;
-            }
-
-            return true;
+            return await IsAuthenticatedInternal(profilePath);
         }
         catch (Exception ex)
         {
             ShowError(
                 owner,
-                $"Epic-inloggningen misslyckades.\n\n{ex.Message}",
+                $"Epic-inloggningen kunde inte genomföras.\n\n{ex.Message}",
                 "Epic-login");
 
             return false;
@@ -223,51 +207,69 @@ public class EpicLauncherService
             return false;
         }
 
+        var isOwnAccount = account is null;
         var profilePath = GetProfilePath(account);
-
-        /*
-         * Eget konto:
-         *
-         * AuthenticateAccount() ska ha skapat OwnSession.
-         *
-         * Lånekonto:
-         *
-         * Profilen ska redan innehålla user.json.
-         */
-        if (!HasCredentials(profilePath))
-        {
-            ShowError(
-                owner,
-                "Ingen sparad Epic-inloggning hittades.\n\n" +
-                "Legendary-profil:\n" +
-                profilePath +
-                "\n\n" +
-                "Logga in på Epic-kontot igen.",
-                "Epic-login");
-
-            return false;
-        }
 
         try
         {
-            PrepareProfile(profilePath);
+            // =====================================================
+            // EGET KONTO
+            // =====================================================
 
             /*
-             * Kontrollera sessionen innan launch.
+             * Eget konto ska ALLTID logga in.
              *
-             * Det här gör att vi får ett tydligt fel här
-             * istället för Legendarys "No saved credentials".
+             * Vi raderar därför eventuell gammal session först.
              */
-            if (!await IsAuthenticatedInternal(profilePath))
+            if (isOwnAccount)
             {
-                ShowError(
-                    owner,
-                    "Epic-sessionen är inte giltig längre.\n\n" +
-                    "Logga in på kontot igen.",
-                    "Epic-login");
+                var authenticated =
+                    await AuthenticateAccount(owner, null);
 
-                return false;
+                if (!authenticated)
+                    return false;
+
+                profilePath = GetProfilePath(null);
             }
+
+            // =====================================================
+            // LÅNEKONTO
+            // =====================================================
+
+            /*
+             * Lånekonto ska redan ha en sparad Legendary-profil.
+             *
+             * Ingen ny login ska visas.
+             */
+            else
+            {
+                if (!HasCredentials(profilePath))
+                {
+                    ShowError(
+                        owner,
+                        "Det här lånekontot har ingen sparad Epic-inloggning.\n\n" +
+                        "Kontakta administratören eller logga in kontot igen.",
+                        "Epic-login");
+
+                    return false;
+                }
+
+                if (!await IsAuthenticatedInternal(profilePath))
+                {
+                    ShowError(
+                        owner,
+                        "Lånekontots Epic-session har gått ut eller är ogiltig.",
+                        "Epic-login");
+
+                    return false;
+                }
+            }
+
+            // =====================================================
+            // STARTA SPELET
+            // =====================================================
+
+            PrepareProfile(profilePath);
 
             var arguments =
                 $"launch \"{EscapeArgument(appName)}\" " +
@@ -313,19 +315,22 @@ public class EpicLauncherService
         }
         finally
         {
+            // =====================================================
+            // EGET KONTO
+            // =====================================================
+
             /*
-             * VIKTIGT:
+             * OwnSession ska aldrig sparas till nästa start.
              *
-             * Radera INTE profilen här.
+             * Nästa gång användaren startar ett spel måste
+             * AuthenticateAccount() därför köras igen.
              *
-             * Legendary kan behöva profilen efter att
-             * launch-processen startats, och vi vill dessutom
-             * inte riskera att radera en giltig Epic-session
-             * innan processen är helt klar.
-             *
-             * Eget konto kan rensas när användaren loggar ut
-             * eller nästa gång en ny autentisering startas.
+             * Lånekontots profil rörs inte.
              */
+            if (isOwnAccount)
+            {
+                DeleteDirectorySafe(profilePath);
+            }
         }
     }
 
@@ -423,6 +428,10 @@ public class EpicLauncherService
                 arguments,
                 createNoWindow);
 
+        /*
+         * Vi läser stdout/stderr själva så att vi kan visa
+         * ett användbart fel om Legendary misslyckas.
+         */
         startInfo.RedirectStandardOutput = true;
         startInfo.RedirectStandardError = true;
 
